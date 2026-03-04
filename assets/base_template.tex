@@ -1,0 +1,163 @@
+% =============================================================================
+% Base LaTeX Template for PDF Translation
+% Supports: Chinese, English, and other CJK languages
+% Compiler: XeLaTeX (recommended) or LuaLaTeX
+% =============================================================================
+
+\documentclass[12pt, a4paper]{article}
+
+% -----------------------------------------------------------------------------
+% Font and Language Configuration (XeLaTeX/LuaLaTeX)
+% -----------------------------------------------------------------------------
+\usepackage{ctex}  % Chinese support - auto-detects system fonts
+\usepackage{fontspec}
+\usepackage{unicode-math}
+
+% Font settings (customize based on your system)
+\setmainfont{Times New Roman}[
+    BoldFont = Times New Roman Bold,
+    ItalicFont = Times New Roman Italic
+]
+\setsansfont{Arial}
+\setmonofont{Courier New}
+
+% CJK font settings (ctex handles this, but can customize)
+% \setCJKmainfont{SimSun}[BoldFont=SimHei, ItalicFont=KaiTi]
+% \setCJKsansfont{Microsoft YaHei}
+% \setCJKmonofont{FangSong}
+
+% -----------------------------------------------------------------------------
+% Page Layout
+% -----------------------------------------------------------------------------
+\usepackage[
+    top=2.5cm,
+    bottom=2.5cm,
+    left=2.5cm,
+    right=2.5cm,
+    headheight=15pt
+]{geometry}
+
+% -----------------------------------------------------------------------------
+% Graphics and Figures
+% -----------------------------------------------------------------------------
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage[export]{adjustbox}  % For image alignment
+
+% Graphics path - will be updated during processing
+\graphicspath{{./images/}}
+
+% -----------------------------------------------------------------------------
+% Tables
+% -----------------------------------------------------------------------------
+\usepackage{booktabs}  % Professional tables
+\usepackage{tabularx}
+\usepackage{longtable}  % Tables spanning multiple pages
+\usepackage{array}
+
+% -----------------------------------------------------------------------------
+% Colors
+% -----------------------------------------------------------------------------
+\usepackage{xcolor}
+\definecolor{linkcolor}{RGB}{0, 102, 204}
+\definecolor{commentcolor}{RGB}{128, 128, 128}
+
+% -----------------------------------------------------------------------------
+% Hyperlinks
+% -----------------------------------------------------------------------------
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=linkcolor,
+    urlcolor=linkcolor,
+    citecolor=linkcolor,
+    pdfencoding=auto,
+    psdextra
+}
+
+% -----------------------------------------------------------------------------
+% Mathematics
+% -----------------------------------------------------------------------------
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{mathtools}
+
+% -----------------------------------------------------------------------------
+% Lists and Enumeration
+% -----------------------------------------------------------------------------
+\usepackage{enumitem}
+\setlist{nosep}  % Compact lists
+
+% -----------------------------------------------------------------------------
+% Multi-column Layout
+% -----------------------------------------------------------------------------
+\usepackage{multicol}
+\setlength{\columnsep}{1cm}
+
+% -----------------------------------------------------------------------------
+% Captions
+% -----------------------------------------------------------------------------
+\usepackage{caption}
+\captionsetup{
+    font=small,
+    labelfont=bf,
+    format=plain
+}
+
+% -----------------------------------------------------------------------------
+% Headers and Footers
+% -----------------------------------------------------------------------------
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}  % Clear defaults
+\fancyhead[L]{\leftmark}
+\fancyhead[R]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+% -----------------------------------------------------------------------------
+% Code Listings (for code blocks in documents)
+% -----------------------------------------------------------------------------
+\usepackage{listings}
+\lstset{
+    basicstyle=\ttfamily\small,
+    breaklines=true,
+    frame=single,
+    backgroundcolor=\color{gray!10}
+}
+
+% -----------------------------------------------------------------------------
+% Paragraph Settings
+% -----------------------------------------------------------------------------
+\setlength{\parindent}{2em}  % Indent first line of paragraphs
+\setlength{\parskip}{0.5ex}  % Space between paragraphs
+
+% -----------------------------------------------------------------------------
+% Document Information (will be replaced)
+% -----------------------------------------------------------------------------
+\title{Translated Document}
+\author{PDF Translator}
+\date{\today}
+
+% =============================================================================
+% DOCUMENT BEGINS
+% =============================================================================
+\begin{document}
+
+% Title page (optional)
+\maketitle
+
+% Table of Contents (optional)
+% \tableofcontents
+% \newpage
+
+% -----------------------------------------------------------------------------
+% Content will be inserted here
+% -----------------------------------------------------------------------------
+
+% PLACEHOLDER FOR TRANSLATED CONTENT
+% The agent will insert the translated content here, maintaining the original
+% document's structure and formatting as closely as possible.
+
+% -----------------------------------------------------------------------------
+
+\end{document}
