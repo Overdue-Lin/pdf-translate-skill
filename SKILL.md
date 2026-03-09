@@ -1,6 +1,6 @@
 ---
 name: pdf-translator
-description: Translate PDF documents while preserving original formatting. Converts PDF pages to images for layout analysis, extracts text and embedded images, translates content using agent's multilingual capabilities, and generates LaTeX code to recreate the original document structure with translated text.
+description: Translate PDF documents while preserving original formatting. Converts PDF pages to images for layout analysis, extracts text and embedded images, translates content using agent's multilingual capabilities, and generates LaTeX code to recreate the original document structure with translated text. Special support for arXiv papers: when user provides arXiv ID (e.g., "2310.12345") or arXiv URL (e.g., "https://arxiv.org/abs/2310.12345" or "https://arxiv.org/pdf/2310.12345.pdf"), automatically download the source TeX files, translate the LaTeX content, and compile to PDF.
 ---
 
 # PDF Translator Skill
@@ -15,6 +15,7 @@ Use this skill when you need to:
 - Handle documents with mixed text and images
 - Process academic papers, reports, or formatted documents
 - Support Chinese/English bidirectional translation
+- **Translate arXiv papers** (provide arXiv ID like "2310.12345" or URL like "https://arxiv.org/abs/2310.12345")
 
 ## Prerequisites
 
@@ -23,11 +24,12 @@ Use this skill when you need to:
 - **PyMuPDF** (`pip install pymupdf pillow`)
 - **XeLaTeX** (TeX Live or MiKTeX) for PDF compilation
 - **ctex LaTeX package** for Chinese support
+- **wget or curl** (for downloading arXiv source files)
 
 ### Installation Commands
 ```bash
 # Python dependencies
-pip install pymupdf pillow
+pip install pymupdf pillow requests
 
 # LaTeX (choose one)
 # Ubuntu/Debian:
@@ -46,6 +48,142 @@ The PDF translation follows this pipeline:
 ```
 PDF Input → Page Images → Layout Analysis → Text Extraction → Translation → LaTeX Generation → PDF Output
 ```
+
+### arXiv Paper Translation (Preferred Method)
+
+When the user provides an **arXiv ID** or **arXiv URL**, use this optimized workflow:
+
+```
+arXiv ID/URL → Download Source TeX → Translate TeX Content → Compile → PDF Output
+```
+
+This method is **preferred** for arXiv papers because:
+- Source TeX files preserve all formatting automatically
+- No need for layout analysis or image extraction
+- Higher quality translation output
+- Faster processing
+
+#### Step 1: Detect arXiv Input
+
+Detect if user provided:
+- **arXiv ID**: e.g., `2310.12345`, `hep-th/9901001`
+- **arXiv URL**: e.g., 
+  - `https://arxiv.org/abs/2310.12345`
+  - `https://arxiv.org/pdf/2310.12345.pdf`
+  - `https://arxiv.org/abs/hep-th/9901001`
+
+**Extract arXiv ID** from input:
+- From URL: extract the ID after `/abs/` or `/pdf/`
+- From direct ID: use as-is
+
+#### Step 2: Download arXiv Source
+
+Download the source TeX files from arXiv using the provided script:
+
+```bash
+# Using the provided script
+python scripts/download_arxiv_source.py 2310.12345 output_dir/
+
+# Or with URL
+python scripts/download_arxiv_source.py https://arxiv.org/abs/2310.12345 ./
+```
+
+**Manual download:**
+```bash
+# Method 1: Use arXiv's official source download
+# Navigate to: https://arxiv.org/e-print/{arxiv_id}
+# Download format: .tar.gz containing all source files
+
+# Method 2: Use wget
+wget -O source.tar.gz https://arxiv.org/e-print/2310.12345
+tar -xzf source.tar.gz
+```
+
+The downloaded archive typically contains:
+- Main `.tex` file (usually named after the paper ID)
+- Style files (`.bst`, `.cls`)
+- Bibliography (`.bib`)
+- Figures (`.pdf`, `.png`, `.eps`)
+- Other source files
+
+#### Step 3: Identify Main TeX File
+
+Find the main TeX file in the extracted contents:
+- Usually named after the paper ID (e.g., `main.tex`, `paper.tex`)
+- Check for `\documentclass` or `\begin{document}` to identify the entry point
+- May need to inspect multiple `.tex` files to find the one with `\maketitle` or `\begin{document}`
+
+#### Step 4: Translate TeX Content(!IMPORTANT)
+
+Read and translate the main TeX file:
+
+1. **Read the TeX file** and identify translatable content:
+   - Text between `{` and `}` in regular text environments
+   - Section titles, captions, footnotes
+   - Abstract content
+   
+2. **Preserve non-translatable elements**:
+   - Math formulas (`$...$`, `\[...\]`)
+   - LaTeX commands (`\ref{...}`, `\cite{...}`)
+   - Figure/table commands
+   - Code blocks
+
+3. **Translation approach**:
+   - Translate text content while keeping LaTeX markup intact
+   - Use `ctex` or `\usepackage{ctex}` for Chinese support
+   - Maintain paragraph structure
+
+4. **Key translation rules**:
+   - Keep all `\section{...}`, `\subsection{...}` content - translate the text inside
+   - Keep all `\caption{...}` content - translate inside
+   - Keep all `\footnote{...}` content - translate inside  
+   - Keep math formulas completely unchanged
+   - Keep `\includegraphics{}` paths unchanged
+   - Keep `\bibliography{}` unchanged
+   - Translate abstract text
+
+**Example translation:**
+```latex
+% Original:
+\section{Introduction}
+We present a new method for...
+
+% Translated:
+\section{介绍}
+我们提出了一种新的方法...
+```
+
+#### Step 5: Compile Translated TeX
+
+Compile the translated TeX file to PDF:
+
+```bash
+# Ensure Chinese support
+# Add to preamble if not present:
+\usepackage{ctex}
+
+# Compile
+xelatex translated.tex
+# Run twice for references
+xelatex translated.tex
+```
+
+Or use the provided script:
+```bash
+python scripts/compile_latex.py translated.tex output_dir/ --passes 2
+```
+
+#### Step 6: Handle Dependencies
+
+If compilation fails due to missing packages or files:
+1. Check for missing `.sty`, `.cls`, or `.bst` files
+2. Copy missing files from the original arXiv source
+3. Check `\graphicspath` for figure locations
+4. Ensure all `\input{}` files are present
+
+---
+
+### Standard PDF Translation Workflow
 
 ### Step 1: Convert PDF to Page Images
 
@@ -297,6 +435,26 @@ If LaTeX compilation fails:
 - Verify all required packages are installed
 - Ensure no syntax errors in generated code
 
+### arXiv Specific Issues
+
+#### Cannot Download Source
+If arXiv source download fails:
+- Check if the paper has source available (not all papers have TeX sources)
+- Try alternative URL: `https://arxiv.org/e-print/{arxiv_id}`
+- Some older papers may not have source available
+
+#### Missing Package Errors
+If compilation fails with "File not found" errors:
+- Copy missing `.sty`, `.cls` files from the original download to your working directory
+- Check for `\usepackage{...}` commands and ensure all referenced files exist
+- Use `kpsewhich` to check if packages are installed system-wide
+
+#### arXiv ID Format
+Common arXiv ID formats:
+- **New format**: `YYMM.NNNNN` (e.g., `2310.12345`)
+- **Old format**: `archive/YYMMNNN` (e.g., `hep-th/9901001`)
+- Both formats work with the download URL
+
 ## Best Practices
 
 1. **Quality over speed**: Take time to analyze layout accurately
@@ -323,3 +481,54 @@ If LaTeX compilation fails:
 - [ ] Chinese characters render correctly
 - [ ] Page numbers and headers present
 - [ ] Overall formatting matches original
+
+## arXiv Translation Example
+
+Here's a complete example of translating an arXiv paper:
+
+### User Input
+> "请翻译这篇 arXiv 论文: https://arxiv.org/abs/2310.12345"
+
+### Workflow Execution
+
+**Step 1: Detect arXiv ID**
+- URL: `https://arxiv.org/abs/2310.12345`
+- Extracted ID: `2310.12345`
+
+**Step 2: Download Source**
+```bash
+python scripts/download_arxiv_source.py 2310.12345 ./arxiv_src
+```
+
+**Step 3: Identify Main TeX File**
+- Found: `main.tex` (the main entry point)
+- Also found: `refs.bib`, `figures/`, `style files`
+
+**Step 4: Translate TeX Content**
+- Read `main.tex`
+- Translate section titles: `\section{Abstract}` → `\section{摘要}`
+- Translate body text while preserving:
+  - Math formulas: `$E = mc^2$` (unchanged)
+  - Citations: `\cite{author2023}` (unchanged)
+  - Figures: `\includegraphics{fig1.pdf}` (unchanged)
+- Output: `main_zh.tex`
+
+**Step 5: Add Chinese Support**
+- Ensure `\usepackage{ctex}` or `\usepackage[UTF8]{ctex}` is in preamble
+- If not present, add it
+
+**Step 6: Compile to PDF**
+```bash
+python scripts/compile_latex.py main_zh.tex ./output --passes 2
+```
+
+**Step 7: Deliver Output**
+- Translated PDF saved to: `./output/main_zh.pdf`
+
+---
+
+## Notes
+
+- Some arXiv papers don't have source available (only PDF). In this case, fall back to standard PDF translation workflow.
+- For papers with complex LaTeX packages, you may need to install additional packages.
+- The `download_arxiv_source.py` script requires `curl` or `wget` to be installed.
