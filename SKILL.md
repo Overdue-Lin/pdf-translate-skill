@@ -532,3 +532,5 @@ python scripts/compile_latex.py main_zh.tex ./output --passes 2
 - Some arXiv papers don't have source available (only PDF). In this case, fall back to standard PDF translation workflow.
 - For papers with complex LaTeX packages, you may need to install additional packages.
 - The `download_arxiv_source.py` script requires `curl` or `wget` to be installed.
+- When the arXiv TeX or PDF file is large, you can translate it paragraph by paragraph and gradually write the translated content into the TeX file to be compiled.
+- If the file contains references, please keep them in English and do not translate the reference section.
