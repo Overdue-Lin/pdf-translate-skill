@@ -155,23 +155,28 @@ We present a new method for...
 
 #### Step 5: Compile Translated TeX
 
-Compile the translated TeX file to PDF:
+**IMPORTANT: For proper citation and reference resolution, compile THREE times:**
 
 ```bash
 # Ensure Chinese support
 # Add to preamble if not present:
 \usepackage{ctex}
 
-# Compile
-xelatex translated.tex
-# Run twice for references
-xelatex translated.tex
+# Compile THREE times to resolve all citations and references
+xelatex translated.tex  # Pass 1: Initial compilation
+xelatex translated.tex  # Pass 2: Resolve citations/references
+xelatex translated.tex  # Pass 3: Final resolution
 ```
 
-Or use the provided script:
+Or use the provided script with `--passes 3`:
 ```bash
-python scripts/compile_latex.py translated.tex output_dir/ --passes 2
+python scripts/compile_latex.py translated.tex output_dir/ --passes 3
 ```
+
+**Why 3 passes?**
+- **Pass 1**: Processes document structure, outputs citations as "?"
+- **Pass 2**: Reads citation info from auxiliary file, resolves references
+- **Pass 3**: Final resolution ensures all `\ref{}`, `\cite{}`, and bibliography are correctly rendered
 
 #### Step 6: Handle Dependencies
 
@@ -274,10 +279,10 @@ Create LaTeX code that recreates the original layout with translated content.
 
 ### Step 6: Compile LaTeX to PDF
 
-Compile the generated LaTeX code to produce the final translated PDF.
+**IMPORTANT: Compile THREE times to ensure all citations and references are properly resolved:**
 
 ```bash
-python scripts/compile_latex.py translated.tex output_dir/ --passes 2
+python scripts/compile_latex.py translated.tex output_dir/ --passes 3
 ```
 
 **Output:**
@@ -519,7 +524,8 @@ python scripts/download_arxiv_source.py 2310.12345 ./arxiv_src
 
 **Step 6: Compile to PDF**
 ```bash
-python scripts/compile_latex.py main_zh.tex ./output --passes 2
+# THREE passes for proper citation/reference resolution
+python scripts/compile_latex.py main_zh.tex ./output --passes 3
 ```
 
 **Step 7: Deliver Output**

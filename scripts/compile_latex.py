@@ -9,10 +9,17 @@ Requirements:
     - ctex package for Chinese support
 
 Usage:
-    python compile_latex.py <input.tex> [output_dir] [--passes 2]
+    python compile_latex.py <input.tex> [output_dir] [--passes 3]
 
 Output:
     Compiled PDF file in the same directory as input .tex file.
+
+Note:
+    For documents with citations (\cite{}) and references (\ref{}),
+    use --passes 3 to ensure proper resolution:
+    - Pass 1: Initial compilation
+    - Pass 2: Resolve citations/references
+    - Pass 3: Final resolution
 """
 
 import argparse
@@ -57,7 +64,7 @@ def has_chinese(text: str) -> bool:
 def compile_latex(
     tex_path: str,
     output_dir: Optional[str] = None,
-    passes: int = 2,
+    passes: int = 3,
     use_xelatex: bool = True,
 ) -> dict:
     """
@@ -66,7 +73,7 @@ def compile_latex(
     Args:
         tex_path: Path to the input .tex file
         output_dir: Directory for output (default: same as tex file)
-        passes: Number of compilation passes (default: 2 for references)
+        passes: Number of compilation passes (default: 3 for proper citation/reference resolution)
         use_xelatex: Use XeLaTeX instead of pdfLaTeX (recommended for CJK)
 
     Returns:
@@ -236,8 +243,8 @@ def main():
         "--passes",
         "-p",
         type=int,
-        default=2,
-        help="Number of compilation passes (default: 2)",
+        default=3,
+        help="Number of compilation passes (default: 3 for proper citation/reference resolution)",
     )
     parser.add_argument(
         "--pdflatex", action="store_true", help="Use pdfLaTeX instead of XeLaTeX"
