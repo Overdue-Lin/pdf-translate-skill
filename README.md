@@ -18,8 +18,6 @@ The agent will leverage multimodal capabilities to recognize the text and diagra
 ```
 pdf-translate-skill/
 ├── SKILL.md                 # Skill definition and usage instructions
-├── assets/                  # Resource files directory
-│   └── base_template.tex    # Base LaTeX template
 ├── references/              # Reference documents directory
 │   ├── latex_templates.md   # LaTeX layout template collection
 │   └── troubleshooting.md   # Troubleshooting guide
